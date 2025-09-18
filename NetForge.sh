@@ -97,8 +97,8 @@ function start_ap() {
     read -r -p "Interfaz WAN [enp4s0]: " WAN_IF
     WAN_IF=${WAN_IF:-enp4s0}
 
-    read -r -p "SSID: " SSID
-    SSID=${SSID:-NetForge_Hotspot}
+    read -r -p "SSID: (Invitados_HotspotWiFi)" SSID
+    SSID=${SSID:-Invitados_HotspotWiFi}
 
     echo "Seguridad:"
     echo "0) Abierta"
