@@ -1,6 +1,7 @@
+
 #!/usr/bin/env bash
 #
-# NetForge v8 - AP + Portal cautivo con NoDogSplash y backend de usuarios
+# NetForge v8 - AP + Portal cautivo con NoDogSplash
 #
 
 set -euo pipefail
@@ -27,16 +28,13 @@ fi
 # -----------------------
 # Dependencias
 # -----------------------
-# -----------------------
-# Dependencias
-# -----------------------
 function install_deps() {
   info "Instalando dependencias..."
-  apt update && apt upgrade
-  apt install -y build-essential git util-linux procps hostapd iproute2 iw haveged dnsmasq python3 python3-flask sqlite3 openssl libmicrohttpd-dev libnl-3-dev libnl-genl-3-dev libssl-dev libpcap-dev
-
- apt update && apt upgrade
- apt install libjson-c-dev
+  apt update
+  apt upgrade -y
+  apt install -y build-essential git util-linux procps hostapd iproute2 iw haveged dnsmasq \
+                 python3 python3-flask sqlite3 openssl libmicrohttpd-dev libnl-3-dev \
+                 libnl-genl-3-dev libssl-dev libpcap-dev libjson-c-dev
 
   # Instalar create_ap si no existe
   if ! command -v create_ap >/dev/null 2>&1; then
@@ -66,8 +64,6 @@ function install_deps() {
 # Portal con NoDogSplash
 # -----------------------
 function start_portal() {
-  setup_portal
-
   # Verificar NoDogSplash
   if ! command -v nodogsplash >/dev/null 2>&1; then
     error "NoDogSplash no está instalado"
@@ -140,6 +136,15 @@ function start_ap() {
     echo "==> Logs en $AP_LOG_FILE"
 }
 
+function stop_ap() {
+    if [[ -f "$AP_PID_FILE" ]] && kill -0 "$(cat $AP_PID_FILE)" 2>/dev/null; then
+        kill "$(cat $AP_PID_FILE)"
+        rm -f "$AP_PID_FILE"
+        echo "==> AP detenido"
+    else
+        echo "==> No hay AP en ejecución"
+    fi
+}
 
 # -----------------------
 # Menú
