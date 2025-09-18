@@ -33,8 +33,7 @@ function install_deps() {
   apt update
   apt upgrade -y
   apt install -y build-essential git util-linux procps hostapd iproute2 iw haveged dnsmasq \
-                 python3 python3-flask sqlite3 openssl libmicrohttpd-dev libnl-3-dev \
-                 libnl-genl-3-dev libssl-dev libpcap-dev libjson-c-dev
+                openssl libmicrohttpd-dev \
 
   # Instalar create_ap si no existe
   if ! command -v create_ap >/dev/null 2>&1; then
