@@ -1,0 +1,269 @@
+#!/usr/bin/env bash
+#
+# NetForge v8 - AP + Portal cautivo con NoDogSplash y backend de usuarios
+#
+
+set -euo pipefail
+IFS=$'\n\t'
+
+PORTAL_DIR="/etc/nodogsplash/htdocs"
+DB_FILE="$PORTAL_DIR/users.db"
+AP_PID_FILE="/tmp/netforge_ap.pid"
+PORTAL_PID_FILE="/tmp/netforge_portal.pid"
+AP_LOG_FILE="/tmp/netforge_ap.log"
+PORTAL_LOG_FILE="/tmp/netforge_portal.log"
+
+# -----------------------
+# Helpers
+# -----------------------
+info()  { echo -e "\n\033[1;34m==>\033[0m $*"; }
+warn()  { echo -e "\n\033[1;33m!!\033[0m $*"; }
+error() { echo -e "\n\033[1;31mERROR:\033[0m $*" >&2; exit 1; }
+
+if [[ $EUID -ne 0 ]]; then
+  error "Ejecuta como root: sudo $0"
+fi
+
+# -----------------------
+# Dependencias
+# -----------------------
+# -----------------------
+# Dependencias
+# -----------------------
+function install_deps() {
+  info "Instalando dependencias..."
+  apt update
+  apt install -y build-essential git util-linux procps hostapd iproute2 iw haveged dnsmasq python3 python3-flask sqlite3 openssl libmicrohttpd-dev libnl-3-dev libnl-genl-3-dev libssl-dev libpcap-dev
+
+  # Instalar create_ap si no existe
+  if ! command -v create_ap >/dev/null 2>&1; then
+    info "Instalando create_ap..."
+    git clone https://github.com/oblique/create_ap /opt/create_ap
+    cd /opt/create_ap
+    make install
+  fi
+
+  # Instalar NoDogSplash si no existe
+  if ! command -v nodogsplash >/dev/null 2>&1; then
+    info "Instalando NoDogSplash desde GitHub..."
+    git clone https://github.com/nodogsplash/nodogsplash.git /opt/nodogsplash
+    cd /opt/nodogsplash
+    make
+    make install
+    systemctl enable nodogsplash
+    info "NoDogSplash instalado y habilitado como servicio"
+  else
+    info "NoDogSplash ya instalado"
+  fi
+
+  info "Todas las dependencias instaladas"
+}
+
+# -----------------------
+# DB y portal
+# -----------------------
+function setup_portal() {
+  mkdir -p "$PORTAL_DIR"
+
+  # Crear DB de usuarios si no existe
+  if [[ ! -f "$DB_FILE" ]]; then
+    info "Creando DB de usuarios..."
+    python3 - <<EOF
+import sqlite3
+conn = sqlite3.connect("$DB_FILE")
+c = conn.cursor()
+c.execute('''CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)''')
+conn.commit()
+conn.close()
+EOF
+  fi
+
+  # Index HTML
+  cat > "$PORTAL_DIR/splash.html" <<EOF
+<html>
+<head><title>Portal NetForge</title></head>
+<body>
+<h2>Bienvenido a NetForge</h2>
+<form method="post" action="/login">
+<input type="text" name="usuario" placeholder="Usuario"><br>
+<input type="password" name="password" placeholder="Contraseña"><br>
+<button type="submit">Entrar</button>
+</form>
+</body>
+</html>
+EOF
+
+  # Flask app
+  cat > "$PORTAL_DIR/app.py" <<'EOF'
+from flask import Flask, request, render_template_string
+import sqlite3, hashlib
+
+app = Flask(__name__)
+DB_FILE = "users.db"
+INDEX_HTML = open("index.html").read()
+
+@app.route("/", methods=["GET"])
+def index():
+    return render_template_string(INDEX_HTML)
+
+@app.route("/login", methods=["POST"])
+def login():
+    usuario = request.form.get("usuario")
+    password = request.form.get("password")
+    if not usuario or not password:
+        return "Usuario o contraseña vacíos", 400
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT password FROM users WHERE username=?", (usuario,))
+    row = c.fetchone()
+    conn.close()
+    if row and row[0] == hashlib.sha256(password.encode()).hexdigest():
+        return "¡Login correcto! Ya tienes Internet."
+    return "Usuario o contraseña incorrectos", 401
+
+@app.route("/admin/add_user", methods=["POST"])
+def add_user():
+    usuario = request.form.get("usuario")
+    password = request.form.get("password")
+    if not usuario or not password:
+        return "Faltan datos", 400
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    try:
+        hashed = hashlib.sha256(password.encode()).hexdigest()
+        c.execute("INSERT INTO users(username,password) VALUES(?,?)", (usuario, hashed))
+        conn.commit()
+    except Exception as e:
+        conn.close()
+        return f"Error: {e}", 400
+    conn.close()
+    return f"Usuario {usuario} creado", 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=443)
+EOF
+}
+
+# -----------------------
+# Usuarios
+# -----------------------
+function add_user() {
+  read -r -p "Usuario: " NUEVO_USUARIO
+  read -rs -p "Contraseña: " NUEVO_PASS
+  echo
+  HASHED_PASS=$(python3 -c "import hashlib; print(hashlib.sha256('$NUEVO_PASS'.encode()).hexdigest())")
+  sqlite3 "$DB_FILE" "INSERT INTO users(username,password) VALUES('$NUEVO_USUARIO','$HASHED_PASS');"
+  info "Usuario $NUEVO_USUARIO creado"
+}
+
+# -----------------------
+# Portal con NoDogSplash
+# -----------------------
+function start_portal() {
+  setup_portal
+
+  # Verificar NoDogSplash
+  if ! command -v nodogsplash >/dev/null 2>&1; then
+    error "NoDogSplash no está instalado"
+  fi
+
+  # Reiniciar NoDogSplash
+  systemctl restart nodogsplash
+  info "Portal cautivo activo (NoDogSplash) y clientes bloqueados hasta autenticarse"
+}
+
+function stop_portal() {
+  systemctl stop nodogsplash
+  info "Portal detenido"
+}
+
+# -----------------------
+# AP
+# -----------------------
+AP_PID_FILE="/tmp/netforge_ap.pid"
+AP_LOG_FILE="/tmp/netforge_ap.log"
+
+function start_ap() {
+    read -r -p "Interfaz Wi-Fi [wlp3s0]: " WIFI_IF
+    WIFI_IF=${WIFI_IF:-wlp3s0}
+
+    read -r -p "Interfaz WAN [enp4s0]: " WAN_IF
+    WAN_IF=${WAN_IF:-enp4s0}
+
+    read -r -p "SSID: " SSID
+    [[ -n "$SSID" ]] || { echo "Error: SSID requerido"; return 1; }
+
+    echo "Seguridad:"
+    echo "0) Abierta"
+    echo "1) WPA/WPA2"
+    read -r -p "Opción [0]: " SEC
+    SEC=${SEC:-0}
+
+    PASS_OPT=""
+    if [[ "$SEC" == "1" ]]; then
+        while true; do
+            read -rs -p "Contraseña (min 8): " P1; echo
+            read -rs -p "Repite: " P2; echo
+            [[ "$P1" == "$P2" && ${#P1} -ge 8 ]] && { PASS_OPT="$P1"; break; }
+            echo "Contraseña inválida, inténtalo de nuevo."
+        done
+    fi
+
+    read -r -p "¿Usar --no-virt? [Y/n]: " NOVIRT
+    NOVIRT=${NOVIRT:-Y}
+    [[ "${NOVIRT^^}" == "Y" ]] && VIRT="--no-virt" || VIRT=""
+
+    if [[ -f "$AP_PID_FILE" ]] && kill -0 "$(cat $AP_PID_FILE)" 2>/dev/null; then
+        echo "AP ya está en ejecución (PID $(cat $AP_PID_FILE))"
+        return 1
+    fi
+
+    CMD=(create_ap --ieee80211n $VIRT "$WIFI_IF" "$WAN_IF" "$SSID")
+    [[ -n "$PASS_OPT" ]] && CMD+=("$PASS_OPT")
+
+    echo "Iniciando AP..."
+    "${CMD[@]}" > "$AP_LOG_FILE" 2>&1 &
+    AP_PID=$!
+    echo "$AP_PID" > "$AP_PID_FILE"
+    echo "==> AP iniciado (PID $AP_PID)"
+    echo "==> Logs en $AP_LOG_FILE"
+}
+
+function stop_ap() {
+    if [[ -f "$AP_PID_FILE" ]] && kill -0 "$(cat $AP_PID_FILE)" 2>/dev/null; then
+        kill "$(cat $AP_PID_FILE)"
+        rm -f "$AP_PID_FILE"
+        echo "==> AP detenido"
+    else
+        echo "==> No hay AP en ejecución"
+    fi
+}
+
+# -----------------------
+# Menú
+# -----------------------
+function menu() {
+  while true; do
+    echo -e "\n\033[1;32mNetForge v8 - Menú\033[0m"
+    echo "1) Instalar dependencias"
+    echo "2) Iniciar AP"
+    echo "3) Detener AP"
+    echo "4) Iniciar portal (NoDogSplash)"
+    echo "5) Detener portal"
+    echo "6) Añadir usuario"
+    echo "0) Salir"
+    read -r -p "Opción: " OPC
+    case "$OPC" in
+      1) install_deps ;;
+      2) start_ap ;;
+      3) stop_ap ;;
+      4) start_portal ;;
+      5) stop_portal ;;
+      6) add_user ;;
+      0) exit 0 ;;
+      *) echo "Opción inválida" ;;
+    esac
+  done
+}
+
+menu
