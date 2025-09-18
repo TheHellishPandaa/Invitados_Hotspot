@@ -91,11 +91,12 @@ function stop_portal() {
 # AP
 # -----------------------
 function start_ap() {
-    read -r -p "Interfaz Wi-Fi [wlp3s0]: " WIFI_IF
-    WIFI_IF=${WIFI_IF:-wlp3s0}
+    ip a
+    
+    read -r -p "Interfaz Wi-Fi [ejemplo: wlp3s0 o wl0]: " WIFI_IF
 
-    read -r -p "Interfaz WAN [enp4s0]: " WAN_IF
-    WAN_IF=${WAN_IF:-enp4s0}
+    read -r -p "Interfaz WAN [ejemplo enp4s0 o eth0]: " WAN_IF
+
 
     read -r -p "SSID: (Invitados_HotspotWiFi)" SSID
     SSID=${SSID:-Invitados_HotspotWiFi}
