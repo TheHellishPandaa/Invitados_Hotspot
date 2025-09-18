@@ -60,103 +60,6 @@ function install_deps() {
 }
 
 # -----------------------
-# DB y portal
-# -----------------------
-function setup_portal() {
-  mkdir -p "$PORTAL_DIR"
-
-  # Crear DB de usuarios si no existe
-  if [[ ! -f "$DB_FILE" ]]; then
-    info "Creando DB de usuarios..."
-    python3 - <<EOF
-import sqlite3
-conn = sqlite3.connect("$DB_FILE")
-c = conn.cursor()
-c.execute('''CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT)''')
-conn.commit()
-conn.close()
-EOF
-  fi
-
-  # Index HTML
-  cat > "$PORTAL_DIR/splash.html" <<EOF
-<html>
-<head><title>Portal NetForge</title></head>
-<body>
-<h2>Bienvenido a NetForge</h2>
-<form method="post" action="/login">
-<input type="text" name="usuario" placeholder="Usuario"><br>
-<input type="password" name="password" placeholder="Contraseña"><br>
-<button type="submit">Entrar</button>
-</form>
-</body>
-</html>
-EOF
-
-  # Flask app
-  cat > "$PORTAL_DIR/app.py" <<'EOF'
-from flask import Flask, request, render_template_string
-import sqlite3, hashlib
-
-app = Flask(__name__)
-DB_FILE = "users.db"
-INDEX_HTML = open("index.html").read()
-
-@app.route("/", methods=["GET"])
-def index():
-    return render_template_string(INDEX_HTML)
-
-@app.route("/login", methods=["POST"])
-def login():
-    usuario = request.form.get("usuario")
-    password = request.form.get("password")
-    if not usuario or not password:
-        return "Usuario o contraseña vacíos", 400
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("SELECT password FROM users WHERE username=?", (usuario,))
-    row = c.fetchone()
-    conn.close()
-    if row and row[0] == hashlib.sha256(password.encode()).hexdigest():
-        return "¡Login correcto! Ya tienes Internet."
-    return "Usuario o contraseña incorrectos", 401
-
-@app.route("/admin/add_user", methods=["POST"])
-def add_user():
-    usuario = request.form.get("usuario")
-    password = request.form.get("password")
-    if not usuario or not password:
-        return "Faltan datos", 400
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    try:
-        hashed = hashlib.sha256(password.encode()).hexdigest()
-        c.execute("INSERT INTO users(username,password) VALUES(?,?)", (usuario, hashed))
-        conn.commit()
-    except Exception as e:
-        conn.close()
-        return f"Error: {e}", 400
-    conn.close()
-    return f"Usuario {usuario} creado", 200
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=443)
-EOF
-}
-
-# -----------------------
-# Usuarios
-# -----------------------
-function add_user() {
-  read -r -p "Usuario: " NUEVO_USUARIO
-  read -rs -p "Contraseña: " NUEVO_PASS
-  echo
-  HASHED_PASS=$(python3 -c "import hashlib; print(hashlib.sha256('$NUEVO_PASS'.encode()).hexdigest())")
-  sqlite3 "$DB_FILE" "INSERT INTO users(username,password) VALUES('$NUEVO_USUARIO','$HASHED_PASS');"
-  info "Usuario $NUEVO_USUARIO creado"
-}
-
-# -----------------------
 # Portal con NoDogSplash
 # -----------------------
 function start_portal() {
@@ -192,6 +95,8 @@ function start_ap() {
 
     read -r -p "SSID: " SSID
     [[ -n "$SSID" ]] || { echo "Error: SSID requerido"; return 1; }
+SSID=${SSID:-NetForge_Hotspot}
+
 
     echo "Seguridad:"
     echo "0) Abierta"
@@ -218,8 +123,15 @@ function start_ap() {
         return 1
     fi
 
-    CMD=(create_ap --ieee80211n $VIRT "$WIFI_IF" "$WAN_IF" "$SSID")
-    [[ -n "$PASS_OPT" ]] && CMD+=("$PASS_OPT")
+   CREATE_AP_BIN=$(command -v create_ap)
+
+if [ -z "$CREATE_AP_BIN" ]; then
+    echo "Error: create_ap no está instalado ni en el PATH"
+    exit 1
+fi
+
+"$CREATE_AP_BIN" wlan0 eth0 MySSID MyPass
+
 
     echo "Iniciando AP..."
     "${CMD[@]}" > "$AP_LOG_FILE" 2>&1 &
@@ -259,7 +171,6 @@ function menu() {
       3) stop_ap ;;
       4) start_portal ;;
       5) stop_portal ;;
-      6) add_user ;;
       0) exit 0 ;;
       *) echo "Opción inválida" ;;
     esac
