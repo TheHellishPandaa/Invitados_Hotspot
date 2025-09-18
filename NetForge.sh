@@ -69,13 +69,13 @@ function start_portal() {
     error "NoDogSplash no está instalado"
   fi
 
-  # Crear carpetas de configuracion y mover archivos de configuración a dichas carpetas
-  mkdir -p /etc/nodogsplash/htdocs/
-  mv splash.html /etc/nodogsplash/htdocs
-  mv splash.css /etc/nodogsplash/htdocs
-  
-  mkdir -p /etc/nodogsplash/
-  mv nodogsplash.conf /etc/nodogsplash/
+# Crear carpetas de configuracion y mover archivos de configuración a dichas carpetas
+mkdir -p /etc/nodogsplash/htdocs/
+cp -f splash.html /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.html no encontrado"
+cp -f splash.css /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.css no encontrado"
+
+mkdir -p /etc/nodogsplash/
+cp -f nodogsplash.conf /etc/nodogsplash/ 2>/dev/null || warn "nodogsplash.conf no encontrado"
 
   # Reiniciar NoDogSplash
   systemctl restart nodogsplash
