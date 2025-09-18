@@ -86,9 +86,6 @@ function stop_portal() {
 # -----------------------
 # AP
 # -----------------------
-AP_PID_FILE="/tmp/netforge_ap.pid"
-AP_LOG_FILE="/tmp/netforge_ap.log"
-
 function start_ap() {
     read -r -p "Interfaz Wi-Fi [wlp3s0]: " WIFI_IF
     WIFI_IF=${WIFI_IF:-wlp3s0}
@@ -97,9 +94,7 @@ function start_ap() {
     WAN_IF=${WAN_IF:-enp4s0}
 
     read -r -p "SSID: " SSID
-    [[ -n "$SSID" ]] || { echo "Error: SSID requerido"; return 1; }
-SSID=${SSID:-NetForge_Hotspot}
-
+    SSID=${SSID:-NetForge_Hotspot}
 
     echo "Seguridad:"
     echo "0) Abierta"
@@ -126,33 +121,25 @@ SSID=${SSID:-NetForge_Hotspot}
         return 1
     fi
 
-   CREATE_AP_BIN=$(command -v create_ap)
-
-if [ -z "$CREATE_AP_BIN" ]; then
-    echo "Error: create_ap no está instalado ni en el PATH"
-    exit 1
-fi
-
-"$CREATE_AP_BIN" wlan0 eth0 MySSID MyPass
-
+    CREATE_AP_BIN=$(command -v create_ap)
+    if [ -z "$CREATE_AP_BIN" ]; then
+        echo "Error: create_ap no está instalado ni en el PATH"
+        exit 1
+    fi
 
     echo "Iniciando AP..."
-    "${CMD[@]}" > "$AP_LOG_FILE" 2>&1 &
+    if [[ -n "$PASS_OPT" ]]; then
+        "$CREATE_AP_BIN" $VIRT "$WIFI_IF" "$WAN_IF" "$SSID" "$PASS_OPT" > "$AP_LOG_FILE" 2>&1 &
+    else
+        "$CREATE_AP_BIN" $VIRT "$WIFI_IF" "$WAN_IF" "$SSID" > "$AP_LOG_FILE" 2>&1 &
+    fi
+
     AP_PID=$!
     echo "$AP_PID" > "$AP_PID_FILE"
     echo "==> AP iniciado (PID $AP_PID)"
     echo "==> Logs en $AP_LOG_FILE"
 }
 
-function stop_ap() {
-    if [[ -f "$AP_PID_FILE" ]] && kill -0 "$(cat $AP_PID_FILE)" 2>/dev/null; then
-        kill "$(cat $AP_PID_FILE)"
-        rm -f "$AP_PID_FILE"
-        echo "==> AP detenido"
-    else
-        echo "==> No hay AP en ejecución"
-    fi
-}
 
 # -----------------------
 # Menú
@@ -165,7 +152,6 @@ function menu() {
     echo "3) Detener AP"
     echo "4) Iniciar portal (NoDogSplash)"
     echo "5) Detener portal"
-    echo "6) Añadir usuario"
     echo "0) Salir"
     read -r -p "Opción: " OPC
     case "$OPC" in
