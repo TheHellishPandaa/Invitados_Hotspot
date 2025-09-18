@@ -69,6 +69,14 @@ function start_portal() {
     error "NoDogSplash no está instalado"
   fi
 
+  # Crear carpetas de configuracion y mover archivos de configuración a dichas carpetas
+  mkdir -p /etc/nodogsplash/htdocs/
+  mv splash.html /etc/nodogsplash/htdocs
+  mv splash.css /etc/nodogsplash/htdocs
+  
+  mkdir -p /etc/nodogsplash/
+  mv nodogsplash.conf /etc/nodogsplash/
+
   # Reiniciar NoDogSplash
   systemctl restart nodogsplash
   info "Portal cautivo activo (NoDogSplash) y clientes bloqueados hasta autenticarse"
