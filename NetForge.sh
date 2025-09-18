@@ -32,8 +32,11 @@ fi
 # -----------------------
 function install_deps() {
   info "Instalando dependencias..."
-  apt update
+  apt update && apt upgrade
   apt install -y build-essential git util-linux procps hostapd iproute2 iw haveged dnsmasq python3 python3-flask sqlite3 openssl libmicrohttpd-dev libnl-3-dev libnl-genl-3-dev libssl-dev libpcap-dev
+
+ apt update && apt upgrade
+ apt install libjson-c-dev
 
   # Instalar create_ap si no existe
   if ! command -v create_ap >/dev/null 2>&1; then
