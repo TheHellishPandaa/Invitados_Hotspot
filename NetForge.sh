@@ -8,7 +8,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 PORTAL_DIR="/etc/nodogsplash/htdocs"
-DB_FILE="$PORTAL_DIR/users.db"
+
 AP_PID_FILE="/tmp/netforge_ap.pid"
 PORTAL_PID_FILE="/tmp/netforge_portal.pid"
 AP_LOG_FILE="/tmp/netforge_ap.log"
