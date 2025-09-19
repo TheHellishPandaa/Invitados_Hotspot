@@ -73,8 +73,14 @@ mkdir -p /etc/nodogsplash/htdocs/
 cp -f splash.html /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.html no encontrado"
 cp -f splash.css /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.css no encontrado"
 cp -f login.php /etc/nodogsplash/htdocs/ 2>/dev/null || warn "login.php no encontrado"
+
 mkdir -p /etc/nodogsplash/
 cp -f nodogsplash.conf /etc/nodogsplash/ 2>/dev/null || warn "nodogsplash.conf no encontrado"
+
+
+#Dar permisos al archivo de login
+chown www-data:www-data /etc/nodogsplash/htdocs/login.php
+chmod 644 /etc/nodogsplash/htdocs/login.php
 
   # Reiniciar NoDogSplash
   systemctl restart nodogsplash
