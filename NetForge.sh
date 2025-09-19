@@ -72,6 +72,7 @@ function start_portal() {
 mkdir -p /etc/nodogsplash/htdocs/
 cp -f splash.html /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.html no encontrado"
 cp -f splash.css /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.css no encontrado"
+cp -f hotspotlogo.jpg /etc/nodogsplash/htdocs/ 2>/dev/null || warn " hotspotlogo.jpg no encontrado"
 
 mkdir -p /etc/nodogsplash/
 cp -f nodogsplash.conf /etc/nodogsplash/ 2>/dev/null || warn "nodogsplash.conf no encontrado"
