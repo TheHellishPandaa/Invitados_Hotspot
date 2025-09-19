@@ -1,90 +1,84 @@
-/* ===== Estilos generales ===== */
 body {
-  margin: 0;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #1a73e8, #003366);
-  color: #fff;
-  height: 100vh;
+  background: #f0f2f5;
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh;
+  margin: 0;
 }
 
-/* ===== Caja central ===== */
 .card {
   background: #fff;
-  color: #333;
   padding: 2rem;
   border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-  max-width: 350px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  max-width: 400px;
   width: 100%;
   text-align: center;
-  animation: fadeIn 1s ease-in-out;
 }
 
-/* ===== Logo ===== */
 .logo {
   max-width: 120px;
   margin-bottom: 1rem;
   border-radius: 10px;
 }
 
-/* ===== Títulos y párrafos ===== */
-.card h2 {
-  margin-bottom: 0.5rem;
+.title {
   color: #1a73e8;
-}
-
-.card p {
-  margin-bottom: 1.5rem;
-  font-size: 0.95em;
-  color: #555;
-}
-
-/* ===== Formulario ===== */
-.form-group {
-  text-align: left;
   margin-bottom: 1rem;
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 0.3rem;
+.welcome {
+  font-size: 1.2rem;
+  color: #d32f2f;
   font-weight: bold;
+}
+
+.info {
+  margin: 1rem 0;
+  font-style: italic;
   color: #333;
 }
 
-.form-group input {
-  width: 100%;
-  padding: 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
+.login-form {
+  margin-top: 1rem;
 }
 
-/* ===== Botón ===== */
+.login-form label {
+  display: block;
+  margin-top: 0.5rem;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.login-form input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
 .btn {
   background: #1a73e8;
-  color: #fff;
+  color: white;
   border: none;
-  padding: 0.7rem 1.5rem;
+  padding: 0.7rem 1.2rem;
   border-radius: 8px;
-  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
-  width: 100%;
+  font-size: 1rem;
 }
 
 .btn:hover {
-  background: #155bb5;
+  background: #155ab6;
 }
 
-/* ===== Pie de página ===== */
 .footer {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   font-size: 0.8rem;
-  color: #666;
+  color: #555;
 }
 
 /* ===== Animación ===== */
