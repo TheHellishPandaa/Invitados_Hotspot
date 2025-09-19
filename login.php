@@ -5,11 +5,12 @@ $users = [
     "invitado" => "wifi2025"
 ];
 
+
 // === RECOGER VARIABLES ===
 $username = $_POST['username'] ?? '';
 $password = $_POST['password'] ?? '';
 $tok      = $_POST['tok'] ?? '';
-$redir    = $_POST['redir'] ?? 'http://example.com';
+$redir    = $_POST['redir'] ?? 'http://google.com';
 
 // === VALIDACIÓN DE CREDENCIALES ===
 if (isset($users[$username]) && $users[$username] === $password) {
