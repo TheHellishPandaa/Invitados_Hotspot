@@ -84,6 +84,8 @@ cp -f nodogsplash.conf /etc/nodogsplash/ 2>/dev/null || warn "nodogsplash.conf n
   # Reiniciar NoDogSplash
   systemctl restart nodogsplash
   info "Portal cautivo activo (NoDogSplash) y clientes bloqueados hasta autenticarse"
+  info "Edita  /etc/nodogsplash/nodogsplash.conf con tus valores para que el portal te funcione"
+  info "luego haz systemctl restart nodogsplash para reiniciar el portal"
 }
 
 function stop_portal() {
