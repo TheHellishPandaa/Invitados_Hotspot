@@ -1,4 +1,22 @@
+<?php
+// Obtener IP del cliente
+$ip = $_SERVER['REMOTE_ADDR'] ?? 'No disponible';
 
+// Intentar obtener la MAC desde la tabla ARP o ip neigh
+$mac = "No disponible";
+
+// Probar con 'ip neigh' (moderno)
+$arp = shell_exec("ip neigh show " . escapeshellarg($ip));
+if (preg_match('/..:..:..:..:..:../', $arp, $matches)) {
+    $mac = $matches[0];
+} else {
+    // Si no funciona, probar con 'arp -n' (más clásico)
+    $arp = shell_exec("arp -n " . escapeshellarg($ip));
+    if (preg_match('/..:..:..:..:..:../', $arp, $matches)) {
+        $mac = $matches[0];
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -28,6 +46,12 @@
     <p class="info">
       Ahora puedes usar tu navegador, correo electrónico y otras aplicaciones de red normalmente.
     </p>
+
+    <!-- Datos del dispositivo -->
+    <div class="device-info">
+      <p><b>Dirección IP:</b> <?= htmlspecialchars($ip) ?></p>
+      <p><b>Dirección MAC:</b> <?= htmlspecialchars($mac) ?></p>
+    </div>
 
     <hr>
     <p class="footer">
