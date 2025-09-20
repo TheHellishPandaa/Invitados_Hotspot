@@ -27,7 +27,7 @@ Ideal para montar redes de invitados, laboratorios de pruebas o hotspots con aut
 
 **Manejo de logs y procesos con PIDs en /tmp.**
 
-   **- 📦 Requisitos**
+   **------ 📦 Requisitos -------**
 
 **Distribución basada en Debian/Ubuntu.**
 
