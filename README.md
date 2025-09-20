@@ -27,7 +27,7 @@ Ideal para montar redes de invitados, laboratorios de pruebas o hotspots con aut
 
 **Manejo de logs y procesos con PIDs en /tmp.**
 
-   **------ 📦 Requisitos -------**
+   **------- 📦 Requisitos -------**
 
 **Distribución basada en Debian/Ubuntu.**
 
@@ -36,4 +36,40 @@ Ideal para montar redes de invitados, laboratorios de pruebas o hotspots con aut
 **Interfaz Wi-Fi compatible con modo AP.**
 
 **Interfaz WAN (Ethernet o Wi-Fi con salida a Internet).**
+
+🚀 Instalación
+
+Clona el repositorio y entra en el directorio:
+
+```bash
+git clone https://github.com/TheHellishPandaa/Invitados_Hotspot.git
+```
+```bash
+cd Invitados_Hotspot
+```
+Haz el script ejecutable
+
+```bash
+chmod +x invitados_hotspot.sh
+```
+
+Ejecuta el script como root
+
+    sudo ./invitados_hotspot.sh
+
+Se abrirá un menú interactivo:
+
+Invitados_Hotspot.
+
+1) Instalar dependencias
+2) Iniciar AP
+3) Detener AP
+4) Iniciar portal (NoDogSplash)
+5) Detener portal
+0) Salir
+
+*** ------ 📜 Licencia -------- ***
+
+Este proyecto se distribuye bajo la licencia MIT.
+Eres libre de usarlo, modificarlo y distribuirlo bajo tus propios términos.
 
