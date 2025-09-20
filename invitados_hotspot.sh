@@ -164,7 +164,7 @@ function stop_ap() {
 # -----------------------
 function menu() {
   while true; do
-    echo -e "\n\033[1;32mNetForge v8 - Menú\033[0m"
+    echo -e "\n\033[1;32mInvitados Hotspot - Menú\033[0m"
     echo "1) Instalar dependencias"
     echo "2) Iniciar AP"
     echo "3) Detener AP"
