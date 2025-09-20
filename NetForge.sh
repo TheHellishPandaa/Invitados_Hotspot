@@ -33,7 +33,7 @@ function install_deps() {
   apt update
   apt upgrade -y
   apt install -y build-essential git util-linux procps hostapd iproute2 iw haveged dnsmasq \
-                openssl libmicrohttpd-dev \
+                openssl libmicrohttpd-dev apache2\
 
   # Instalar create_ap si no existe
   if ! command -v create_ap >/dev/null 2>&1; then
@@ -73,6 +73,9 @@ mkdir -p /etc/nodogsplash/htdocs/
 cp -f splash.html /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.html no encontrado"
 cp -f splash.css /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.css no encontrado"
 cp -f hotspotlogo.jpg /etc/nodogsplash/htdocs/ 2>/dev/null || warn " hotspotlogo.jpg no encontrado"
+cp -f hotspotlogo.jpg /var/www/html 2>/dev/null || warn " hotspotlogo.jpg no encontrado"
+cp -f status.html /var/wwww/html 2>/dev/null || warn " status.html no encontrado"
+rm -rf index.html
 
 mkdir -p /etc/nodogsplash/
 cp -f nodogsplash.conf /etc/nodogsplash/ 2>/dev/null || warn "nodogsplash.conf no encontrado"
