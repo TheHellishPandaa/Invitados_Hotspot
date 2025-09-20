@@ -1,7 +1,7 @@
 
 #!/usr/bin/env bash
 #
-# NetForge v8 - AP + Portal cautivo con NoDogSplash
+# Invitados Hotspot - AP + Portal cautivo con NoDogSplash
 #
 
 set -euo pipefail
