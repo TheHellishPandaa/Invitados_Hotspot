@@ -1,3 +1,15 @@
+
+<?php
+// Obtener IP del cliente
+$ip = $_SERVER['REMOTE_ADDR'] ?? 'No disponible';
+
+// Intentar obtener la MAC desde la tabla ARP
+$mac = "No disponible";
+$arp = shell_exec("arp -n " . escapeshellarg($ip));
+if (preg_match('/..:..:..:..:..:../', $arp, $matches)) {
+    $mac = $matches[0];
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -23,13 +35,13 @@
 
     <!-- Datos del dispositivo -->
     <div class="device-info">
-      <p><b>Dirección IP:</b> $ip</p>
-      <p><b>Dirección MAC:</b> $mac</p>
+      <p><b>Dirección IP:</b> <?= htmlspecialchars($ip) ?></p>
+      <p><b>Dirección MAC:</b> <?= htmlspecialchars($mac) ?></p>
     </div>
 
-    <form method="GET" action="$authaction" class="login-form">
-      <input type="hidden" name="tok" value="$tok">
-      <input type="hidden" name="redir" value="$redir">
+    <form method="GET" action="<?php echo htmlspecialchars($_GET['authaction'] ?? '#'); ?>" class="login-form">
+      <input type="hidden" name="tok" value="<?php echo htmlspecialchars($_GET['tok'] ?? ''); ?>">
+      <input type="hidden" name="redir" value="<?php echo htmlspecialchars($_GET['redir'] ?? ''); ?>">
 
       <!-- Si activas autenticación con usuario/contraseña:
       <label for="username">Usuario:</label>
@@ -43,7 +55,7 @@
     </form>
 
     <p class="footer">
-      &copy; 2025-2026 Jaime Galvez Martinez jaime.galvez@linuxmail.org.<br>
+      &copy; 2025-2026 Jaime Galvez Martinez &lt;jaime.galvez@linuxmail.org&gt;.<br>
       Software liberado bajo licencia <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GNU GPL</a>.
     </p>
   </div>
