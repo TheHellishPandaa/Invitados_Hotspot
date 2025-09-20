@@ -74,8 +74,8 @@ cp -f splash.html /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.html no e
 cp -f splash.css /etc/nodogsplash/htdocs/ 2>/dev/null || warn "splash.css no encontrado"
 cp -f hotspotlogo.jpg /etc/nodogsplash/htdocs/ 2>/dev/null || warn " hotspotlogo.jpg no encontrado"
 cp -f hotspotlogo.jpg /var/www/html 2>/dev/null || warn " hotspotlogo.jpg no encontrado"
-cp -f status.html /var/wwww/html 2>/dev/null || warn " status.html no encontrado"
-rm -rf index.html
+rm -f /var/www/html/index.html
+cp -f index.html /var/wwww/html 2>/dev/null || warn " index.html no encontrado"
 
 mkdir -p /etc/nodogsplash/
 cp -f nodogsplash.conf /etc/nodogsplash/ 2>/dev/null || warn "nodogsplash.conf no encontrado"
