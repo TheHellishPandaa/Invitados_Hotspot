@@ -17,7 +17,7 @@ Ideal para montar redes de invitados, laboratorios de pruebas o hotspots con aut
 
 **Portal personalizable con HTML, CSS e imágenes.**
 
-**Posibilidad De crear Una Red WiFi Totalmente aislada de tu red principal (para ello edita /etc/nodogsplash/nodogsplash.conf y en dicho archivo introduce FirewallRule block to "direccion_ip_de_red/mascara"**
+**Posibilidad De crear Una Red WiFi Totalmente aislada de tu red principal (para ello edita /etc/nodogsplash/nodogsplash.conf y en dicho archivo introduce FirewallRule block to "direccion_ip_de_red/mascara")**
 
 **Control mediante un menú interactivo:**
 
